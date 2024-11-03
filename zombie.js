@@ -12,7 +12,7 @@ export class Zombie {
         this.cellSize = maze.cellSize;
         this.radius = Math.max(1, Math.round(this.cellSize/6));
         this.speed = Math.max(0.01, this.radius/12);
-        this.detectRadius = Math.max(5, this.radius*40);
+        this.detectRadius = Math.max(5, this.radius*30);
         this.state = state;
         this.target = this.getPatrollCoord();
         this.targetCell;
@@ -270,7 +270,7 @@ export class Zombie {
         this.cellSize = height/10;
 
         this.radius = Math.max(1, Math.round(this.cellSize/6));
-        this.detectRadius = Math.max(5, this.radius*40);
+        this.detectRadius = Math.max(5, this.radius*30);
         if (this.state == States.Agressive) {
             this.speed = Math.max(0.01, this.radius/12)*1.5;
         } else if (this.state == States.Patrolling) {
