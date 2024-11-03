@@ -1,0 +1,16 @@
+canvas {
+    border: 5px solid hotpink;
+}
+
+.stats {
+    position: fixed;
+    top:0px;
+    right:30px;
+}
+.stats p {
+    font-size: 30px;
+}
+
+p {
+    font-size: 20px;
+}
