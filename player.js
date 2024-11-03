@@ -1,10 +1,11 @@
 export class Player {
-    constructor (x, y, colors, radius = 10, speed = 2.5) {
+    constructor (x, y, colors, cellSize) {
         this.x = x;
         this.y = y;
+        this.cellSize = cellSize;
         this.colors = colors;
-        this.radius = radius;
-        this.speed = speed;
+        this.radius = Math.round(cellSize/6);
+        this.speed = this.radius/7;
     }
 
     drawPlayer(ctx){
@@ -16,13 +17,25 @@ export class Player {
     }
 
     //Alla celler som spelaren täcker
-    getCells(cellSize) {
+    getCells() {
         let cells = [];
-        cells.push([Math.floor(this.x/cellSize), Math.floor((this.y - this.radius)/cellSize)]);
-        cells.push([Math.floor((this.x + this.radius)/cellSize), Math.floor(this.y/cellSize)]);
-        cells.push([Math.floor(this.x/cellSize), Math.floor((this.y + this.radius)/cellSize)]);
-        cells.push([Math.floor((this.x - this.radius)/cellSize), Math.floor(this.y/cellSize)]);
+        cells.push([Math.floor(this.x/this.cellSize), Math.floor((this.y - this.radius)/this.cellSize)]);
+        cells.push([Math.floor((this.x + this.radius)/this.cellSize), Math.floor(this.y/this.cellSize)]);
+        cells.push([Math.floor(this.x/this.cellSize), Math.floor((this.y + this.radius)/this.cellSize)]);
+        cells.push([Math.floor((this.x - this.radius)/this.cellSize), Math.floor(this.y/this.cellSize)]);
         return cells;
+    }
+
+    resize(width, height, oldWidth, oldHeight) {
+        let relativeX = this.x / oldWidth;
+        let relativeY = this.y / oldHeight;
+
+        this.cellSize = height/10;
+        this.radius = Math.round(this.cellSize/6);
+        this.speed = this.radius/7;
+
+        this.x = relativeX*width;
+        this.y = relativeY*height;
     }
 }
 

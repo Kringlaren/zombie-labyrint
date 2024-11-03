@@ -4,14 +4,15 @@ const States = {
 }
 
 export class Zombie {
-    constructor (x, y, maze, colors, radius = 10, speed = 1, detectRadius = 200, state = States.Patrolling) {
+    constructor (x, y, maze, colors, state = States.Patrolling) {
         this.x = x;
         this.y = y;
         this.maze = maze;
         this.colors = colors;
-        this.radius = radius;
-        this.speed = speed;
-        this.detectRadius = detectRadius;
+        this.cellSize = maze.cellSize;
+        this.radius = Math.max(1, Math.round(this.cellSize/6));
+        this.speed = Math.max(0.01, this.radius/12);
+        this.detectRadius = Math.max(5, this.radius*40);
         this.state = state;
         this.target = this.getPatrollCoord();
         this.targetCell;
@@ -29,11 +30,15 @@ export class Zombie {
     }
 
     move(ctx, player) {
-        //Byter target varje 300 frames för att inte fastna
-        if (this.stepCountSinceTarget >= 300) { 
+        //Byter target varje 500 frames eller vid resize för att inte fastna
+        if (this.stepCountSinceTarget >= 500) { 
             if (this.state == States.Patrolling) {
                 this.target = this.getPatrollCoord();
                 this.atTarget = false;
+                this.nextCloseTarget();
+            }
+            else if (this.state == States.Agressive) {
+                this.target = this.getChasingCoord(player);
                 this.nextCloseTarget();
             }
 
@@ -47,14 +52,14 @@ export class Zombie {
         if (distance + player.radius <= this.detectRadius) {
             if (this.state != States.Agressive) {
                 this.state = States.Agressive;
-                this.speed += 1;
+                this.speed = this.speed * 1.5;
             }
             this.target = this.getChasingCoord(player);
         }
         else {
             if (this.state != States.Patrolling) {
                 this.state = States.Patrolling;
-                this.speed -= 1;
+                this.speed = this.speed / 1.5;
             }
             if (this.atTarget === true) {
                 this.target = this.getPatrollCoord();
@@ -105,9 +110,8 @@ export class Zombie {
     }
 
     nextCloseTarget() {
-        let cellSize = this.maze.cellSize;
         let nextCell;
-        let currentCell = [Math.floor(this.x/cellSize), Math.floor(this.y/cellSize)];
+        let currentCell = [Math.floor(this.x/this.cellSize), Math.floor(this.y/this.cellSize)];
 
         let directions;
 
@@ -210,9 +214,10 @@ export class Zombie {
             }
         }
         
+        //Hitta en slumpmässig punkt i cellen om inte i samma cell som target
         if (nextCell && (this.targetCell[0] != currentCell[0] || this.targetCell[1] != currentCell[1])) {
-            let randomX = Math.round(Math.random() * (cellSize - 2*this.radius) + nextCell[0] * cellSize + this.radius);
-            let randomY = Math.round(Math.random() * (cellSize - 2*this.radius) + nextCell[1] * cellSize + this.radius);
+            let randomX = Math.round(Math.random() * (this.cellSize - 2*this.radius) + nextCell[0] * this.cellSize + this.radius);
+            let randomY = Math.round(Math.random() * (this.cellSize - 2*this.radius) + nextCell[1] * this.cellSize + this.radius);
             this.closeTarget = [randomX, randomY];
         }
         else {
@@ -221,11 +226,10 @@ export class Zombie {
     }
 
     getPatrollCoord() {
-        let cellSize = this.maze.cellSize;
         let cellFound = false;
 
         while (!cellFound) {
-            let randomDist = Math.random() * 200 + 200;
+            let randomDist = Math.random() * this.maze.width/5 + this.maze.width/5;
             let randomDir = Math.random() * 2*Math.PI;
             let newX = Math.round(this.x + Math.cos(randomDir) * randomDist);
             let newY = Math.round(this.y + Math.sin(randomDir) * randomDist);
@@ -233,18 +237,18 @@ export class Zombie {
             newX = (newX + this.maze.width) % this.maze.width;
             newY = (newY + this.maze.height) % this.maze.height;
 
-            this.targetCell = [Math.floor(newX / cellSize), Math.floor(newY / cellSize)];
+            this.targetCell = [Math.floor(newX / this.cellSize), Math.floor(newY / this.cellSize)];
 
             //Om målet inte är en vägg
             if (this.maze.maze[this.targetCell[1]][this.targetCell[0]] === 0) {
-                if (Math.round(newX / cellSize) != Math.round((newX - this.radius)/cellSize)){
+                if (Math.round(newX / this.cellSize) != Math.round((newX - this.radius)/this.cellSize)){
                     newX += this.radius;
-                } else if (Math.round(newX / cellSize) != Math.round((newX + this.radius)/cellSize)) {
+                } else if (Math.round(newX / this.cellSize) != Math.round((newX + this.radius)/this.cellSize)) {
                     newX -= this.radius
                 }
-                if (Math.round(newY / cellSize) != Math.round((newY - this.radius)/cellSize)) {
+                if (Math.round(newY / this.cellSize) != Math.round((newY - this.radius)/this.cellSize)) {
                     newY += this.radius;
-                } else if (Math.round(newY / cellSize) != Math.round((newY + this.radius)/cellSize)) {
+                } else if (Math.round(newY / this.cellSize) != Math.round((newY + this.radius)/this.cellSize)) {
                     newY -= this.radius;
                 }
                 return [newX, newY];
@@ -253,12 +257,30 @@ export class Zombie {
     }
 
     getChasingCoord(player) {
-        let cellSize = this.maze.cellSize;
-        this.targetCell = [Math.floor(player.x / cellSize), Math.floor(player.y / cellSize)];
+        this.targetCell = [Math.floor(player.x / this.cellSize), Math.floor(player.y / this.cellSize)];
 
         return [player.x, player.y];
     }
 
 
+    resize(width, height, oldWidth, oldHeight) {
+        let relativeX = this.x / oldWidth;
+        let relativeY = this.y / oldHeight;
+        
+        this.cellSize = height/10;
+
+        this.radius = Math.max(1, Math.round(this.cellSize/6));
+        this.detectRadius = Math.max(5, this.radius*40);
+        if (this.state == States.Agressive) {
+            this.speed = Math.max(0.01, this.radius/12)*1.5;
+        } else if (this.state == States.Patrolling) {
+            this.speed = Math.max(0.01, this.radius/12);
+        }
+        
+        this.x = relativeX*width;
+        this.y = relativeY*height;
+
+        this.stepCountSinceTarget = 500;
+    }
     
 }

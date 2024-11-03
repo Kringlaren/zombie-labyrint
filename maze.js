@@ -45,7 +45,7 @@ export class Maze {
         this.cellSize = height/10;
         this.rows = 10;
         this.cols = 20;
-        this.coinRadius = 7;
+        this.coinRadius = Math.max(2,Math.round(this.cellSize/8));
         this.coinPositions = [];
         this.maze = this.createMaze();
     }
@@ -90,7 +90,7 @@ export class Maze {
 
             this.ctx.fillStyle = this.colors.zombie;
             this.ctx.beginPath();
-            this.ctx.arc(cord[0] + this.cellSize/2, cord[1] + this.cellSize/2, this.coinRadius/3, 0, 2*Math.PI);
+            this.ctx.arc(cord[0] + this.cellSize/2, cord[1] + this.cellSize/2, this.coinRadius/2, 0, 2*Math.PI);
             this.ctx.fill();
             this.ctx.closePath();
         }
@@ -110,6 +110,12 @@ export class Maze {
         }
     }
 
+    resize(width, height) {
+        this.width = width;
+        this.height = height;
+        this.cellSize = height/10;
+        this.coinRadius = Math.max(2,Math.round(this.cellSize/8));
+    }
 
     addCoins(maze, amount) {
         let cellsFound = false;

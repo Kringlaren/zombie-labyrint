@@ -2,10 +2,11 @@ import {Player} from "./player.js";
 import {Zombie} from "./zombie.js";
 import {Maze} from "./maze.js";
 
-let width;
-let height;
+let width = 3*window.innerWidth/4;
+let height = 3*window.innerWidth/8;
 let canvas;
 let ctx;
+let cellSize = height/10;
 
 let player;
 let zombies = [];
@@ -32,16 +33,21 @@ const keys = {};
 
 //Körs vid uppstart
 function boot(){
-    canvas = document.getElementById("canvas");
-    width = canvas.width;
-    height = canvas.height;
+    let info = document.getElementById("info");
+    canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    document.body.insertBefore(canvas, info);
+
     ctx = canvas.getContext("2d");
+
+
     coinStat = document.getElementById("coins");
     lifeStat = document.getElementById("lives");
     pointsStat = document.getElementById("points");
     pointsMultiplyerStat = document.getElementById("pointsmult");
 
-    player = new Player(width/2, height - 1.5 * height/10, Colors);
+    player = new Player(width/2, height - 1.5 * height/10, Colors, cellSize);
     maze = new Maze(width, height, ctx, player, Colors);
 
     maze.drawMaze();
@@ -52,6 +58,26 @@ function boot(){
 
     document.addEventListener("keydown", (event) => keys[event.key] = true);
     document.addEventListener("keyup", (event) => keys[event.key] = false);
+    window.addEventListener("resize", () => {
+        let oldWidth = width;
+        let oldHeight = height;
+
+        width = 3*window.innerWidth/4;
+        height = 3*window.innerWidth/8;
+        cellSize = height/10;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        maze.resize(width, height);
+        player.resize(width, height, oldWidth, oldHeight);
+        zombies.forEach(zombie => {
+            zombie.resize(width, height, oldWidth, oldHeight);
+        });
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    });
 
     process(); 
 }
@@ -110,12 +136,10 @@ function restart() {
     updateStats();
 
     player = null;
-    player = new Player(width/2, height - 1.5*maze.cellSize, Colors);
+    player = new Player(width/2, height - 1.5*cellSize, Colors, cellSize);
 
     maze = null;
     maze = new Maze(width, height, ctx, player, Colors);
-    
-    player.drawPlayer(ctx);
 
     zombies = [];
     addZombies(3);
@@ -130,7 +154,7 @@ function updateStats() {
 
 //kollar om spelaren är i labyrinten och sedan om någon av cellerna man är i är vägg, 1 = collision, 0 inte collision, -1 utanför labyrint
 function checkCollision() {
-    let cells = player.getCells(maze.cellSize);
+    let cells = player.getCells();
     let cellUp = cells[0];
     let cellRight = cells[1];
     let cellDown = cells[2];
@@ -154,8 +178,8 @@ function checkCollision() {
 function checkCoinCollision() {
     let coinPositions = maze.coinPositions;
     coinPositions.forEach(coin => {
-        let coinX = coin[0]*maze.cellSize + maze.cellSize/2;
-        let coinY = coin[1]*maze.cellSize + maze.cellSize/2;
+        let coinX = coin[0]*cellSize + cellSize/2;
+        let coinY = coin[1]*cellSize + cellSize/2;
 
         let dx = player.x - coinX;
         let dy = player.y - coinY;
@@ -194,13 +218,13 @@ function addZombies(amount) {
     while (!cellsFound && amount > 0 && i < 1000) {
         let cellX = Math.floor(Math.random() * maze.maze[0].length);
         let cellY = Math.floor(Math.random() * maze.maze.length);
-        let x = cellX * maze.cellSize + maze.cellSize/2;
-        let y = cellY * maze.cellSize + maze.cellSize/2;
+        let x = cellX * cellSize + cellSize/2;
+        let y = cellY * cellSize + cellSize/2;
 
         if (maze.maze[cellY][cellX] !== 1) {
             let canPlace = true;
 
-            if (Math.abs(x - player.x) <= 5*maze.cellSize && Math.abs(y - player.y) <= 5*maze.cellSize) {
+            if (Math.abs(x - player.x) <= 5*cellSize && Math.abs(y - player.y) <= 5*cellSize) {
                 canPlace = false;
             }
             
