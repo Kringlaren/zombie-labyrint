@@ -45,6 +45,7 @@ export class Maze {
         this.cellSize = height/10;
         this.rows = 10;
         this.cols = 20;
+        this.coinAmount = startCoinAmount;
         this.coinRadius = Math.max(2,Math.round(this.cellSize/8));
         this.coinPositions = [];
         this.maze = this.createMaze();
@@ -136,7 +137,7 @@ export class Maze {
                     let coinX = this.coinPositions[i][0];
                     let coinY = this.coinPositions[i][1];
                 
-                    if (Math.abs(x - coinX) <= 3 && Math.abs(y - coinY) <= 3) {
+                    if (Math.abs(x - coinX) <= 3 && Math.abs(y - coinY) <= 3 && iteration < 800) {
                         canPlace = false;
                         break;
                     }
@@ -144,7 +145,7 @@ export class Maze {
                 }
 
                 //Kontrollerar om ett mynt är för nära spelaren
-                if (Math.abs(x - playerCellX) <= 3 && Math.abs(y - playerCellY) <= 3) {
+                if (Math.abs(x - playerCellX) <= 3 && Math.abs(y - playerCellY) <= 3 && iteration < 800) {
                     canPlace = false;
                 }
                 
@@ -166,9 +167,9 @@ export class Maze {
         }
         return maze;
     }
-    updateCoins(x,y) {
+    updateCoins(x,y,amount) {
         this.removeCoin(x,y);
-        this.addCoins(this.maze, 1);
+        this.addCoins(this.maze, amount);
     }
     removeCoin(x,y) {
         if (this.maze[y][x] == Feature.Coin || this.maze[y][x] == Feature.InfestedCoin) {

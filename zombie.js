@@ -3,16 +3,18 @@ const States = {
     Patrolling: 1
 }
 
+let speedMultiplyer = 1.8;
+
 export class Zombie {
-    constructor (x, y, maze, colors, state = States.Patrolling) {
+    constructor (x, y, maze, colors, speed, state = States.Patrolling) {
         this.x = x;
         this.y = y;
         this.maze = maze;
         this.colors = colors;
         this.cellSize = maze.cellSize;
         this.radius = Math.max(1, Math.round(this.cellSize/6));
-        this.speed = Math.max(0.01, this.radius/12);
-        this.detectRadius = Math.max(5, this.radius*30);
+        this.speed = speed;
+        this.detectRadius = this.cellSize * 4;
         this.state = state;
         this.target = this.getPatrollCoord();
         this.targetCell;
@@ -29,9 +31,9 @@ export class Zombie {
         ctx.closePath();
     }
 
-    move(ctx, player) {
-        //Byter target varje 500 frames eller vid resize för att inte fastna
-        if (this.stepCountSinceTarget >= 500) { 
+    move(ctx, player, delta) {
+        //Byter target varje efter ett tag eller vid resize för att inte fastna
+        if (this.stepCountSinceTarget >= 20000 * delta/1000) { 
             if (this.state == States.Patrolling) {
                 this.target = this.getPatrollCoord();
                 this.atTarget = false;
@@ -52,14 +54,14 @@ export class Zombie {
         if (distance + player.radius <= this.detectRadius) {
             if (this.state != States.Agressive) {
                 this.state = States.Agressive;
-                this.speed = this.speed * 1.5;
+                this.speed = this.speed * speedMultiplyer;
             }
             this.target = this.getChasingCoord(player);
         }
         else {
             if (this.state != States.Patrolling) {
                 this.state = States.Patrolling;
-                this.speed = this.speed / 1.5;
+                this.speed = this.speed / speedMultiplyer;
             }
             if (this.atTarget === true) {
                 this.target = this.getPatrollCoord();
@@ -71,33 +73,35 @@ export class Zombie {
             if (this.stepCountSinceTarget == 0) {
                 this.nextCloseTarget();
             }
-            this.walkToward(this.closeTarget);
+            this.walkToward(this.closeTarget, delta);
         }
 
         this.stepCountSinceTarget += 1;
         this.drawZombie(ctx);
     }
 
-    walkToward(coord) {
+    walkToward(coord, delta) {
+        let speed = this.speed * delta/1000;
+
         if (this.closeTarget[0] === this.x && this.closeTarget[1] === this.y) {
             this.nextCloseTarget();
         }
 
         if (this.x < coord[0]) {
-            this.x += this.speed;
+            this.x += speed;
         }
         else if (this.x > coord[0]) {
-            this.x -= this.speed;
+            this.x -= speed;
         }
 
         if (this.y < coord[1]) {
-            this.y += this.speed;
+            this.y += speed;
         }
         else if (this.y > coord[1]) {
-            this.y -= this.speed;
+            this.y -= speed;
         }
 
-        if (Math.abs(this.x - coord[0]) < this.speed && Math.abs(this.y - coord[1]) < this.speed) {
+        if (Math.abs(this.x - coord[0]) < speed && Math.abs(this.y - coord[1]) < speed) {
             this.x = coord[0];
             this.y = coord[1];
             if (this.closeTarget[0] === this.target[0] && this.closeTarget[1] === this.target[1]) {
@@ -263,18 +267,18 @@ export class Zombie {
     }
 
 
-    resize(width, height, oldWidth, oldHeight) {
+    resize(width, height, oldWidth, oldHeight, speed) {
         let relativeX = this.x / oldWidth;
         let relativeY = this.y / oldHeight;
         
         this.cellSize = height/10;
 
         this.radius = Math.max(1, Math.round(this.cellSize/6));
-        this.detectRadius = Math.max(5, this.radius*30);
+        this.detectRadius = this.cellSize * 4;
         if (this.state == States.Agressive) {
-            this.speed = Math.max(0.01, this.radius/12)*1.5;
+            this.speed = speed * speedMultiplyer;
         } else if (this.state == States.Patrolling) {
-            this.speed = Math.max(0.01, this.radius/12);
+            this.speed = speed;
         }
         
         this.x = relativeX*width;

@@ -5,7 +5,7 @@ export class Player {
         this.cellSize = cellSize;
         this.colors = colors;
         this.radius = Math.round(cellSize/6);
-        this.speed = this.radius/7;
+        this.speed = this.cellSize/9 * 30; //Standardiserad hastighet på 30 FPS
     }
 
     drawPlayer(ctx){
@@ -32,7 +32,7 @@ export class Player {
 
         this.cellSize = height/10;
         this.radius = Math.round(this.cellSize/6);
-        this.speed = this.radius/7;
+        this.speed = this.cellSize/9 * 30;
 
         this.x = relativeX*width;
         this.y = relativeY*height;
