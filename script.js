@@ -201,7 +201,7 @@ function checkCoinCollision() {
                 pointsMultiplyer += 0.2;
             }
 
-            if (coins % 20 == 0){  //Lägger till ett mynt och ökar hastigheten varje 20 mynt
+            if (coins % 16 == 0){  //Lägger till ett mynt och ökar hastigheten varje 20 mynt
                 maze.updateCoins(coin[0], coin[1], 2);
                 player.speed = player.speed * 1.1;
                 zombies.forEach(zombie => {
@@ -251,6 +251,9 @@ function addZombies(amount) {
             }
         }
         iteration++; //Undvik oändlig loop
+        if (iteration == 999) {
+            console.log("för många försök i addZombies");
+        }
     }
 }
 

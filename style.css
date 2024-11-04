@@ -5,14 +5,14 @@ canvas {
 .stats {
     position: fixed;
     top:0px;
-    right:1.5vw;
+    right:3vw;
 }
 .stats p {
-    font-size: 3vw;
+    font-size: 2.5vw;
 }
 
 p {
-    font-size: 2vw;
+    font-size: 1.8vw;
 }
 
 @media  (width < 600px){
