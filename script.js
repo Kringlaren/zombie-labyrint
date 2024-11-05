@@ -22,6 +22,8 @@ let coinStat;
 let pointsMultiplyerStat;
 let lifeStat;
 let pointsStat;
+let highscoreStat;
+let highscore = 0;
 
 const Colors = {
     wall: "#333",
@@ -35,6 +37,8 @@ const keys = {};
 
 //Körs vid uppstart
 function boot(){
+    highscore = window.localStorage.getItem("highscore");
+
     let info = document.getElementById("info");
     canvas = document.createElement("canvas");
     canvas.width = width;
@@ -48,6 +52,8 @@ function boot(){
     lifeStat = document.getElementById("lives");
     pointsStat = document.getElementById("points");
     pointsMultiplyerStat = document.getElementById("pointsmult");
+    highscoreStat = document.getElementById("highscore");
+    highscoreStat.innerText = "Highscore: " + highscore;
 
     player = new Player(width/2, height - 1.5 * height/10, Colors, cellSize);
     maze = new Maze(width, height, ctx, player, Colors);
@@ -130,11 +136,17 @@ function playerInput(delta){
 }
 
 function restart() {
+
     if (lives > 0) {
         lives--;
     } else {
         lives = 3;
         points = 0;
+
+        if (points > highscore) {
+            window.localStorage.setItem("highscore", points);
+            highscoreStat.innerText = "Highscore: " + window.localStorage.getItem("highscore");
+        }
     }
     coins = 0;
     pointsMultiplyer = 1;
