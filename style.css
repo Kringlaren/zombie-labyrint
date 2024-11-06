@@ -1,5 +1,6 @@
 canvas {
     border: 5px solid hotpink;
+    border-radius: 5px;
 }
 
 .stats {
