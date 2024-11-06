@@ -15,6 +15,10 @@ p {
     font-size: 1.8vw;
 }
 
+button {
+    font-size: 1.5vw;
+}
+
 @media  (width < 600px){
     .stats {
         position: inherit;

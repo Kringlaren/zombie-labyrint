@@ -25,6 +25,8 @@ let pointsStat;
 let highscoreStat;
 let highscore = 0;
 
+let zombieChance = 60;
+
 const Colors = {
     wall: "#333",
     floor: "#555",
@@ -64,8 +66,8 @@ function boot(){
     addZombies(3);
 
 
-    document.addEventListener("keydown", (event) => keys[event.key] = true);
-    document.addEventListener("keyup", (event) => keys[event.key] = false);
+    document.addEventListener("keydown", (event) => keys[event.key.toLowerCase()] = true);
+    document.addEventListener("keyup", (event) => keys[event.key.toLowerCase()] = false);
     window.addEventListener("resize", () => {
         let oldWidth = width;
         let oldHeight = height;
@@ -113,22 +115,22 @@ function process(timestamp) {
 
 function playerInput(delta){
     let speed = player.speed * delta/1000;
-    if (keys["w"]) {
+    if (keys["w"] || keys["ArrowUp"]) {
         player.y -= speed;
         if (checkCollision()==1) {player.y += speed};
         if (checkCollision()==-1) {player.y = height};
     }
-    if (keys["s"]) {
+    if (keys["s"] || keys["ArrowDown"]) {
         player.y += speed;
         if (checkCollision()==1) {player.y -= speed};
         if (checkCollision()==-1) {player.y = 0};
     }
-    if (keys["a"]) {
+    if (keys["a"] || keys["ArrowLeft"]) {
         player.x -= speed;
         if (checkCollision()==1) {player.x += speed};
         if (checkCollision()==-1) {player.x = width};
     }
-    if (keys["d"]) {
+    if (keys["d"] || keys["ArrowRight"]) {
         player.x += speed;
         if (checkCollision()==1) {player.x -= speed};
         if (checkCollision()==-1) {player.x = 0};
@@ -140,13 +142,13 @@ function restart() {
     if (lives > 0) {
         lives--;
     } else {
-        lives = 3;
-        points = 0;
-
         if (points > highscore) {
             window.localStorage.setItem("highscore", points);
-            highscoreStat.innerText = "Highscore: " + window.localStorage.getItem("highscore");
+            highscoreStat.innerText = "Highscore: " + points;
         }
+
+        lives = 3;
+        points = 0;
     }
     coins = 0;
     pointsMultiplyer = 1;
@@ -209,11 +211,15 @@ function checkCoinCollision() {
             points += Math.round(100 * pointsMultiplyer);
 
             if (maze.maze[coin[1]][coin[0]] === 3) {
-                addZombies(1);
+                let r = Math.floor(Math.random()*100);
+                if (r < zombieChance) {
+                    addZombies(1);
+                }
+                
                 pointsMultiplyer += 0.2;
             }
 
-            if (coins % 16 == 0){  //Lägger till ett mynt och ökar hastigheten varje 20 mynt
+            if (coins % 16 == 0){  //Lägger till ett mynt och ökar hastigheten varje 16 mynt
                 maze.updateCoins(coin[0], coin[1], 2);
                 player.speed = player.speed * 1.1;
                 zombies.forEach(zombie => {
@@ -268,5 +274,12 @@ function addZombies(amount) {
         }
     }
 }
+
+function clearHighscore() {
+    window.localStorage.setItem("highscore", 0);
+    highscoreStat.innerText = "Highscore: " + 0;
+    highscore = 0;
+}
+window.clearHighscore = clearHighscore;
 
 boot();

@@ -268,9 +268,6 @@ export class Zombie {
 
 
     resize(width, height, oldWidth, oldHeight, speed) {
-        let relativeX = this.x / oldWidth;
-        let relativeY = this.y / oldHeight;
-        
         this.cellSize = height/10;
 
         this.radius = Math.max(1, Math.round(this.cellSize/6));
@@ -281,10 +278,10 @@ export class Zombie {
             this.speed = speed;
         }
         
-        this.x = relativeX*width;
-        this.y = relativeY*height;
+        this.x = Math.round(this.x / oldWidth * width);
+        this.y = Math.round(this.y / oldHeight * height);   
 
-        this.stepCountSinceTarget = 500;
+        this.stepCountSinceTarget = 9999999;
     }
     
 }
