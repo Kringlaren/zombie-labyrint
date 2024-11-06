@@ -24,6 +24,7 @@ let lifeStat;
 let pointsStat;
 let highscoreStat;
 let highscore = 0;
+let lastScore;
 
 let zombieChance = 60;
 
@@ -56,6 +57,7 @@ function boot(){
     pointsMultiplyerStat = document.getElementById("pointsmult");
     highscoreStat = document.getElementById("highscore");
     highscoreStat.innerText = "Highscore: " + highscore;
+    lastScore = document.getElementById("lastscore");
 
     player = new Player(width/2, height - 1.5 * height/10, Colors, cellSize);
     maze = new Maze(width, height, ctx, player, Colors);
@@ -146,6 +148,7 @@ function restart() {
             window.localStorage.setItem("highscore", points);
             highscoreStat.innerText = "Highscore: " + points;
         }
+        lastScore.innerText = "Förra: " + points;
 
         lives = 3;
         points = 0;

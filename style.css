@@ -4,11 +4,13 @@ canvas {
 
 .stats {
     position: fixed;
-    top:0px;
+    top:1vw;
     right:3vw;
 }
 .stats p {
     font-size: 2.5vw;
+    margin: 1vw 0px;
+    padding: 0px;
 }
 
 p {
@@ -17,6 +19,7 @@ p {
 
 button {
     font-size: 1.5vw;
+    margin: 1vw;
 }
 
 @media  (width < 600px){
