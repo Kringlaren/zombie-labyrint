@@ -140,7 +140,6 @@ function playerInput(delta){
 }
 
 function restart() {
-
     if (lives > 0) {
         lives--;
     } else {
